@@ -1,0 +1,166 @@
+{
+    "name": "Automatizacion n8n - Ejemplo",
+    "nodes": [
+          {
+                  "parameters": {
+                            "rule": {
+                                        "interval": [
+                                                      {
+                                                                      "field": "hours",
+                                                                      "hoursInterval": 1
+                                                      }
+                                        ]
+                            }
+                  },
+                  "id": "a1b2c3d4-0001-0001-0001-000000000001",
+                  "name": "Trigger cada hora",
+                  "type": "n8n-nodes-base.scheduleTrigger",
+                  "typeVersion": 1.1,
+                  "position": [250, 300]
+          },
+          {
+                  "parameters": {
+                            "method": "GET",
+                            "url": "https://jsonplaceholder.typicode.com/todos/1",
+                            "options": {}
+                  },
+                  "id": "a1b2c3d4-0002-0002-0002-000000000002",
+                  "name": "Llamada HTTP",
+                  "type": "n8n-nodes-base.httpRequest",
+                  "typeVersion": 4.1,
+                  "position": [470, 300]
+          },
+          {
+                  "parameters": {
+                            "conditions": {
+                                        "options": {
+                                                      "caseSensitive": true,
+                                                      "leftValue": "",
+                                                      "typeValidation": "strict"
+                                        },
+                                        "conditions": [
+                                                      {
+                                                                      "id": "condition-1",
+                                                                      "leftValue": "={{ $json.completed }}",
+                                                                      "rightValue": true,
+                                                                      "operator": {
+                                                                                        "type": "boolean",
+                                                                                        "operation": "equals"
+                                                                      }
+                                                      }
+                                        ],
+                                        "combinator": "and"
+                            },
+                            "options": {}
+                  },
+                  "id": "a1b2c3d4-0003-0003-0003-000000000003",
+                  "name": "Comprobar estado",
+                  "type": "n8n-nodes-base.if",
+                  "typeVersion": 2,
+                  "position": [690, 300]
+          },
+          {
+                  "parameters": {
+                            "assignments": {
+                                        "assignments": [
+                                                      {
+                                                                      "id": "assign-1",
+                                                                      "name": "mensaje",
+                                                                      "value": "Tarea completada correctamente",
+                                                                      "type": "string"
+                                                      },
+                                                      {
+                                                                      "id": "assign-2",
+                                                                      "name": "timestamp",
+                                                                      "value": "={{ $now }}",
+                                                                      "type": "string"
+                                                      }
+                                        ]
+                            },
+                            "options": {}
+                  },
+                  "id": "a1b2c3d4-0004-0004-0004-000000000004",
+                  "name": "Preparar resultado",
+                  "type": "n8n-nodes-base.set",
+                  "typeVersion": 3.3,
+                  "position": [910, 220]
+          },
+          {
+                  "parameters": {
+                            "assignments": {
+                                        "assignments": [
+                                                      {
+                                                                      "id": "assign-3",
+                                                                      "name": "mensaje",
+                                                                      "value": "Tarea pendiente",
+                                                                      "type": "string"
+                                                      },
+                                                      {
+                                                                      "id": "assign-4",
+                                                                      "name": "timestamp",
+                                                                      "value": "={{ $now }}",
+                                                                      "type": "string"
+                                                      }
+                                        ]
+                            },
+                            "options": {}
+                  },
+                  "id": "a1b2c3d4-0005-0005-0005-000000000005",
+                  "name": "Preparar aviso",
+                  "type": "n8n-nodes-base.set",
+                  "typeVersion": 3.3,
+                  "position": [910, 400]
+          }
+    ],
+    "connections": {
+          "Trigger cada hora": {
+                  "main": [
+                            [
+                                        {
+                                                      "node": "Llamada HTTP",
+                                                      "type": "main",
+                                                      "index": 0
+                                        }
+                            ]
+                  ]
+          },
+          "Llamada HTTP": {
+                  "main": [
+                            [
+                                        {
+                                                      "node": "Comprobar estado",
+                                                      "type": "main",
+                                                      "index": 0
+                                        }
+                            ]
+                  ]
+          },
+          "Comprobar estado": {
+                  "main": [
+                            [
+                                        {
+                                                      "node": "Preparar resultado",
+                                                      "type": "main",
+                                                      "index": 0
+                                        }
+                            ],
+                            [
+                                        {
+                                                      "node": "Preparar aviso",
+                                                      "type": "main",
+                                                      "index": 0
+                                        }
+                            ]
+                  ]
+          }
+    },
+    "pinData": {},
+    "settings": {
+          "executionOrder": "v1"
+    },
+    "staticData": null,
+    "tags": [],
+    "triggerCount": 1,
+    "updatedAt": "2026-05-14T00:00:00.000Z",
+    "versionId": "1"
+}
