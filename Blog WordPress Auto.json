@@ -1,0 +1,551 @@
+{
+  "name": "Blog WordPress Auto",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                5
+              ],
+              "triggerAtHour": 11
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -512,
+        -272
+      ],
+      "id": "bc62c6f6-b52d-48a7-a0d5-748edf7d5931",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Eres un experto en contenido digital. Sugiere UN tema original para un blog sobre WordPress, Inteligencia Artificial (Claude, Gemini, Freepik...) Automatización con IA, SEO técnico, Diseño Web, Herramientas digitales, n8n, UX/UI y Marketing Digital.\n\nEstos temas ya están publicados, NO los repitas ni uses temas similares:\n{{ $json.titulos_publicados }}\n\nIMPORTANTE: Rota entre las categorías. No sugiereas temas de SEO si los últimos 3 temas publicados son de SEO.\n\nDevuelve SOLO el título del tema, sin explicaciones ni puntuación adicional.\n"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        192,
+        -688
+      ],
+      "id": "c4e682e0-e9d8-44ad-939b-b92c40492348",
+      "name": "1.Sugiere Tema",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "z4NYKK9MwK0VhBK0",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Eres un redactor de contenido digital experto en español, especializado en WordPress,Inteligencia Artificial (Claude, Gemini, Freepik...), automatización con IA, diseño web y. Escribe un post completo de blog sobre el siguiente tema: {{ $('1.Sugiere Tema').item.json.content.parts[0].text }}\n\nRequisitos:\n- Escrito en español\n- Entre 1200 y 2000 palabras según la profundidad del tema\n- Estructura con H2 y H3\n- HTML semántico limpio, sin markdown, sin bloques de código\n- Incluye introducción, desarrollo y conclusión\n- Tono profesional pero cercano\n- Evita frases genéricas, listas vacías y estructuras típicas de IA. \n  El contenido debe sonar como experiencia real, no como un resumen de Wikipedia.\n\nENLACES INTERNOS:\nUsa 2-3 de estos posts existentes del blog cuando sean relevantes al tema:\n{{ $('HTTP Request2').all().map(item => '- \"' + item.json.title.rendered + '\" → ' + item.json.link).join('\\n') }}\n\nREGLA CRÍTICA: Copia las URLs exactamente como aparecen arriba. No modifiques, acortes ni reescribas ninguna URL.\n\nENLACES EXTERNOS:\nUsa 2-3 de estas fuentes reales encontradas en la web:\n{{ $json.organic.slice(0,5).map(r => '- \"' + r.title + '\" → ' + r.link).join('\\n') }}\n\nREGLA CRÍTICA: Usa únicamente estas URLs exactas, sin modificarlas.\n\nDevuelve SOLO el HTML del contenido, sin <html>, sin <head>, sin <body>. Solo el contenido interior.\n"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        192,
+        -336
+      ],
+      "id": "f485d378-48f8-4f19-8a2f-0de56fc821a9",
+      "name": "2.Crea HTML",
+      "retryOnFail": true,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "z4NYKK9MwK0VhBK0",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Eres un experto en SEO. Basándote en este contenido de post de blog, genera los metadatos SEO.\n\nContenido: {{ $json.content.parts[0].text }}\n\nDevuelve ÚNICAMENTE un JSON válido con esta estructura exacta, sin explicaciones, sin markdown, sin bloques de código:\n{\n{\n  \"seo_title\": \"título SEO máximo 60 caracteres\",\n  \"meta_description\": \"descripción SEO máximo 155 caracteres\",\n  \"slug\": \"url-amigable-sin-espacios-ni-tildes\",\n  \"focus_keyphrase\": \"palabra clave principal del artículo, 2-4 palabras\"\n}\n}\n"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        192,
+        -176
+      ],
+      "id": "b352863f-8e73-474c-8bb8-4db77458a60b",
+      "name": "3.SEO",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "z4NYKK9MwK0VhBK0",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Cogemos el texto bruto del nodo de la IA (siguiendo la ruta de tu captura)\nconst rawSeoText = $node[\"3.SEO\"].json.content.parts[0].text;\nconst htmlRaw = $node[\"2.Crea HTML\"].json;\n\n// 2. Extraemos el HTML\nlet htmlContent = htmlRaw.text || (htmlRaw.content ? htmlRaw.content.parts[0].text : \"Sin contenido\");\n\n// 3. Convertimos el texto de la IA en un objeto JSON de verdad\nlet seoData = {};\ntry {\n  // Limpiamos los bloques de código markdown por si Gemini ha puesto ```json\n  let cleanText = rawSeoText.replace(/```json/gi, '').replace(/```/g, '').trim();\n  seoData = JSON.parse(cleanText);\n} catch (e) {\n  seoData = { seo_title: \"Fallo al leer IA\", meta_description: \"Fallo IA\", slug: \"fallo-ia\" };\n}\n\n// 4. Limpiamos y asignamos (ahora sí encontrará los datos)\nlet finalTitle = (seoData.seo_title || \"Sin título\").substring(0, 60);\nlet finalDesc = (seoData.meta_description || \"Sin desc\").substring(0, 155);\nlet finalSlug = seoData.slug || \"sin-slug\";\nlet finalKeyword = seoData.focus_keyphrase || finalSlug.replace(/-/g, ' ');\n\nreturn [{\n  json: {\n    post_title: finalTitle,\n    post_content: htmlContent,\n    post_slug: finalSlug,\n    yoast_title: finalTitle,\n    yoast_desc: finalDesc,\n    yoast_keyword: finalKeyword\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        656,
+        -416
+      ],
+      "id": "07d5f01f-861e-4f20-883b-8cac5cecbd5f",
+      "name": "4.Estructura de Datos"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        1552,
+        -416
+      ],
+      "id": "5112039a-ff7f-4777-9dc5-74b865be9789",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Basándote en el siguiente título y contenido de un post de blog, selecciona las categorías más relevantes de esta lista:\n\n- Diseño Gráfico (ID: 12)\n- Diseño Web (ID: 98)\n- Inteligencia Artificial (ID: 97)\n- Marketing Digital (ID: 33)\n- Tipografía (ID: 21)\n- UX/UI (ID: 18)\n\nTítulo: {{ $('4.Estructura de Datos').item.json.seo_title }}\nTema: {{ $('4.Estructura de Datos').item.json.topic }}\n\nDevuelve ÚNICAMENTE un array JSON con los IDs numéricos de las categorías relevantes, sin explicaciones, sin markdown. Ejemplo: [97, 33]"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        848,
+        -416
+      ],
+      "id": "9e13ffdd-41c7-4b8d-bbf3-693a153078eb",
+      "name": "5.Categorías",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "z4NYKK9MwK0VhBK0",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://alejandromunozgoni.com/wp-json/wp/v2/media",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Disposition",
+              "value": "attachment; filename=\"imagen-post.jpg\""
+            },
+            {
+              "name": "Content-Type",
+              "value": "image/jpeg"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1360,
+        -416
+      ],
+      "id": "6ea84e48-9f34-4f98-be51-00402363d74c",
+      "name": "8.Sube Imagen WP",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "mBfw47JO6JnsATXK",
+          "name": "Unnamed credential 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://alejandromunozgoni.com/wp-json/wp/v2/posts",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n  {\n    \"title\": $('4.Estructura de Datos').first().json.post_title,\n    \"content\": $('4.Estructura de Datos').first().json.post_content,\n    \"slug\": $('4.Estructura de Datos').first().json.post_slug,\n    \"status\": \"draft\",\n    \"featured_media\": $json.id || 0,\n    \"meta\": {\n      \"_yoast_wpseo_title\": $('4.Estructura de Datos').first().json.yoast_title,\n      \"_yoast_wpseo_metadesc\": $('4.Estructura de Datos').first().json.yoast_desc,\n      \"_yoast_wpseo_focuskw\": $('4.Estructura de Datos').first().json.yoast_keyword\n    }\n  }\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1728,
+        -416
+      ],
+      "id": "f70baefe-5b54-4079-ad19-ed8838a3d83e",
+      "name": "9. Publica Post",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "mBfw47JO6JnsATXK",
+          "name": "Unnamed credential 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.stability.ai/v2beta/stable-image/generate/core",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "image/*"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "prompt",
+              "value": "=Professional blog header image, modern and clean design, related to digital design, web development, artificial intelligence and UX/UI. High quality, no text, wide format, 16:9."
+            },
+            {
+              "name": "output_format",
+              "value": "jpeg"
+            },
+            {
+              "name": "aspect_ratio",
+              "value": "16:9"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1168,
+        -416
+      ],
+      "id": "1974d924-6ce0-4221-8d78-465b050998da",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "G8d8zevZwlxviTvP",
+          "name": "Query Auth account"
+        },
+        "httpBearerAuth": {
+          "id": "mz14JwIQ3CT0QdKC",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://alejandromunozgoni.com/wp-json/wp/v2/posts?per_page=10&orderby=date&order=desc&_fields=title",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -288,
+        -272
+      ],
+      "id": "f30cd838-246d-4d00-8efa-d05d90b3b997",
+      "name": "HTTP Request1",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "mBfw47JO6JnsATXK",
+          "name": "Unnamed credential 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const titulos = items.map(item => item.json.title.rendered);\nconst listaTitulos = titulos.join('\\n- ');\n\nreturn [{\n  json: {\n    titulos_publicados: `- ${listaTitulos}`\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        -272
+      ],
+      "id": "3a93fbd5-9b07-4268-87f5-83ced34cfae5",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "url": "https://alejandromunozgoni.com/wp-json/wp/v2/posts?per_page=50&_fields=id,title,link",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        192,
+        -544
+      ],
+      "id": "09c85e33-fc80-478e-80f9-890519cb7eab",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://google.serper.dev/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"q\": \"{{ $('1.Sugiere Tema').item.json.content.parts[0].text }} fuentes\",\n  \"num\": 5,\n  \"hl\": \"es\",\n  \"gl\": \"es\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        320,
+        -544
+      ],
+      "id": "b43aaa0a-d7fe-4920-b639-1059a879d5ad",
+      "name": "HTTP Request3",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "n3tuwJbYcxxwv5B2",
+          "name": "Header Auth account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1.Sugiere Tema": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2.Crea HTML": {
+      "main": [
+        [
+          {
+            "node": "3.SEO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "3.SEO": {
+      "main": [
+        [
+          {
+            "node": "4.Estructura de Datos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "4.Estructura de Datos": {
+      "main": [
+        [
+          {
+            "node": "5.Categorías",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "9. Publica Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5.Categorías": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "8.Sube Imagen WP": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "8.Sube Imagen WP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "1.Sugiere Tema",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "2.Crea HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "d2847a98-8861-4688-b5b1-ec27182d0259",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0a110b5c43b2914c17f2325ed9460eb21235d42a99cb45e17ff313eaade6dfe7"
+  },
+  "id": "iJsQLCe3PjwObZBX",
+  "tags": []
+}
